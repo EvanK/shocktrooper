@@ -47,6 +47,7 @@ You should end up seeing output like:
 Estimated 1 rows in test.tsv
 
 
+====================
 Processing 1 of 1
 Connected as jdoe @ 10.0.0.10!
 

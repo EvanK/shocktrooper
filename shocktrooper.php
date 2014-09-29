@@ -84,7 +84,7 @@ announce("Estimated $total rows in ".CREDS_FILE."\n");
 if (($fh = fopen(CREDS_FILE, 'r')) !== FALSE) {
     $i = 1;
     while (($row = fgetcsv($fh, 5000, CREDS_DELIMITER)) !== FALSE) {
-        announce("\nProcessing {$i} of {$total}");
+        announce("\n".str_repeat('=', 20)."\nProcessing {$i} of {$total}");
         attempt_patch($row);
         $i++;
     }
