@@ -35,9 +35,9 @@ Next, invoke the script and pass it said credentials file:
 
 `php shocktrooper.php /home/me/servers.tsv`
 
-All SSH activity will be output to STDERR, so you can redirect it to a log file if you just want to see the important bits:
+All SSH activity will be output to STDERR, so you can redirect it to a log file (recommended!) if you just want to see the important bits:
 
-`php shocktrooper.php /home/me/servers.tsv 2> ssh.log`
+`php shocktrooper.php /home/me/servers.tsv 2> ssh.$(date +"%Y%m%d-%H%M%S").log`
 
 It will ssh into each server in turn, and test for known vulnerabilities. If any are found, it will attempt to upgrade bash with the system package manager. Afterward, it will test for said vulnerabilities once more.
 
