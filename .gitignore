@@ -1,0 +1,6 @@
+vendor/*
+*.csv
+*.tsv
+*.log
+composer.lock
+composer.phar
