@@ -185,6 +185,10 @@ function ssh_root ($ssh, $username, $password, $rootpass) {
         announce("Gained root!\n");
         return $ssh;
     }
+    else {
+        announce("Already root!\n");
+        return $ssh;
+    }
 }
 
 function ssh_disconnect ($ssh, $msg = "Disconnected") {
