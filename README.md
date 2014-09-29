@@ -2,7 +2,7 @@
 
 ### What is this?
 
-A quickly thrown together script -- based on information from Shellshocker.net -- to ssh into, detect, and patch shellshock vulnerabilities across a number of remote servers, with the built in package manager on each given server.
+A quickly thrown together script -- based on information from [Shellshocker.net](https://shellshocker.net) -- to ssh into, detect, and patch shellshock vulnerabilities across a number of remote servers, with the built in package manager on each given server.
 
 Currently supported:
 
