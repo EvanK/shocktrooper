@@ -37,6 +37,16 @@ $exploits = array(
         'test' => '(for x in {1..200} ; do echo "for x$x in ; do :"; done; for x in {1..200} ; do echo done ; done) | bash ||'."\n".'echo "CVE-2014-7187 vulnerable, word_lineno"',
         'output' => 'CVE-2014-7187 vulnerable, word_lineno',
     ),
+
+    'Exploit 6 (CVE-2014-6278)' => array(
+        'test' => 'shellshocker=\'() { echo You are vulnerable; }\' bash -c shellshocker',
+        'output' => 'You are vulnerable',
+    ),
+
+    'Exploit 7 (CVE-2014-6277)' => array(
+        'test' => 'bash -c "f() { x() { _;}; x() { _;} <<a; }" 2>/dev/null || echo vulnerable',
+        'output' => 'vulnerable',
+    ),
 );
 
 # Package managers to test for
@@ -45,6 +55,8 @@ $package_managers = array(
     'apt-get' => 'apt-get -qq update; apt-get -qq -y install bash',
     'pacman' => 'pacman -Syu',
 );
+
+$servers = array();
 
 # Print usage if no input file provided
 if (count($argv) < 2) {
@@ -80,6 +92,8 @@ else {
 $total = count_rows(CREDS_FILE);
 announce("Estimated $total rows in ".CREDS_FILE."\n");
 
+$ssh_log = __DIR__ . '/ssh.' . trim(shell_exec('date +"%Y%m%d-%H%M%S"')) . '.log';
+
 # Attempt patching of each entry
 if (($fh = fopen(CREDS_FILE, 'r')) !== FALSE) {
     $i = 1;
@@ -89,6 +103,39 @@ if (($fh = fopen(CREDS_FILE, 'r')) !== FALSE) {
         $i++;
     }
     fclose($fh);
+}
+
+announce("\n".str_repeat('*', 20)."\nSummary of work...");
+
+foreach ($servers as $hostname => $hostdata) {
+    announce("{$hostname}...", false);
+
+    switch ($hostdata['status']) {
+        case 'untouched':
+            announce('could not connect');
+            break;
+
+        case 'tested':
+            if (isset($hostdata['post_vulns'])) {
+                announce('patched the following: ' . implode('; ', array_diff($hostdata['pre_vulns'], $hostdata['post_vulns']) ));
+                announce("\tstill vulnerable to the following: " . implode('; ', $hostdata['post_vulns']));
+            } else {
+                announce('found the following, but could not patch (probably could not gain root access?): ' . implode('; ', $hostdata['pre_vulns']));
+            }
+            break;
+
+        case 'unaffected':
+            announce('not vulnerable to known shellshock vulns!');
+            break;
+
+        case 'patched':
+            announce('patched the following: ' . implode('; ', $hostdata['pre_vulns']));
+            break;
+
+        default:
+            announce("\nSomething has gone awry");
+            break;
+    }
 }
 
 announce('Complete!');
@@ -107,6 +154,7 @@ function announce ($msg, $newline = true) {
 }
 
 function stamp_log ($msg) {
+    global $ssh_log;
     global $current_host;
 
     if (! isset($current_host)) {
@@ -115,7 +163,7 @@ function stamp_log ($msg) {
 
     # stamp each line of message with hostname
     $msg = str_replace("\n", "\n[{$current_host}] ", str_replace("\r", '', $msg));
-    file_put_contents('php://stderr', "[{$current_host}] $msg\n\n", FILE_APPEND);
+    file_put_contents($ssh_log, "[{$current_host}] $msg\n\n", FILE_APPEND);
 }
 
 function count_rows ($filename) {
@@ -220,6 +268,7 @@ function test_vulns ($ssh) {
 }
 
 function attempt_patch ($row) {
+    global $servers;
     global $current_host;
     global $exploits;
     global $package_managers;
@@ -230,14 +279,20 @@ function attempt_patch ($row) {
     $password = trim($row[2]);
     $rootpass = trim($row[3]);
 
+    $servers[$hostname] = array('status' => 'untouched');
+
     $ssh = ssh_connect($hostname, $username, $password);
     if(!ssh_assert($ssh, '![$#] $!', 'Expected $ or # prompt')) return;
 
     # Test for vulns before rooting
     $vulns = test_vulns($ssh);
+    $servers[$hostname]['pre_vulns'] = $vulns;
+    $servers[$hostname]['status'] = 'tested';
+
     if (empty($vulns)) {
         announce('No shellshock vulnerabilities found!');
         ssh_disconnect($ssh);
+        $servers[$hostname]['status'] = 'unaffected';
         return;
     }
 
@@ -270,10 +325,12 @@ function attempt_patch ($row) {
     if(!ssh_assert($ssh, '![$#] $!', 'Expected $ or # prompt')) return;
 
     $vulns = test_vulns($ssh);
+    $servers[$hostname]['post_vulns'] = $vulns;
 
     if (empty($vulns)) {
         announce('No shellshock vulnerabilities found!');
         ssh_disconnect($ssh);
+        $servers[$hostname]['status'] = 'patched';
         return;
     }
 

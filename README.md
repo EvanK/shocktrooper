@@ -35,9 +35,7 @@ Next, invoke the script and pass it said credentials file:
 
 `php shocktrooper.php /home/me/servers.tsv`
 
-All SSH activity will be output to STDERR, so you can redirect it to a log file (recommended!) if you just want to see the important bits:
-
-`php shocktrooper.php /home/me/servers.tsv 2> ssh.$(date +"%Y%m%d-%H%M%S").log`
+All SSH activity will be written to a timestamped log file in the script directory (eg `ssh.20141006-103000.log`) for debugging purposes.
 
 It will ssh into each server in turn, and test for known vulnerabilities. If any are found, it will attempt to upgrade bash with the system package manager. Afterward, it will test for said vulnerabilities once more.
 
@@ -51,11 +49,13 @@ Estimated 1 rows in test.tsv
 Processing 1 of 1
 Connected as jdoe @ 10.0.0.10!
 
-Testing for Exploit 1 (CVE-2014-6271)...ALERT: Vulnerable to  Exploit 1 (CVE-2014-6271)
-Testing for Exploit 2 (CVE-2014-7169)...ALERT: Vulnerable to  Exploit 2 (CVE-2014-7169)
+Testing for Exploit 1 (CVE-2014-6271)...ALERT: Vulnerable to Exploit 1 (CVE-2014-6271)
+Testing for Exploit 2 (CVE-2014-7169)...ALERT: Vulnerable to Exploit 2 (CVE-2014-7169)
 Testing for Exploit 3 (???)...ALERT: Vulnerable to Exploit 3 (???)
-Testing for Exploit 4 (CVE-2014-7186)...ALERT: Vulnerable to  Exploit 4 (CVE-2014-7186)
+Testing for Exploit 4 (CVE-2014-7186)...ALERT: Vulnerable to Exploit 4 (CVE-2014-7186)
 Testing for Exploit 5 (CVE-2014-7187)...ALERT: Vulnerable to Exploit 5 (CVE-2014-7187)
+Testing for Exploit 6 (CVE-2014-6278)...ALERT: Vulnerable to Exploit 6 (CVE-2014-6278)
+Testing for Exploit 7 (CVE-2014-6277)...ALERT: Vulnerable to Exploit 7 (CVE-2014-6277)
 Gained root!
 
 Attempting bash upgrade with apt-get
@@ -64,8 +64,15 @@ Connected as jdoe @ 10.0.0.10!
 
 Testing for Exploit 1 (CVE-2014-6271)...YAY: Not vulnerable to Exploit 1 (CVE-2014-6271)
 Testing for Exploit 2 (CVE-2014-7169)...YAY: Not vulnerable to Exploit 2 (CVE-2014-7169)
-Testing for Exploit 3 (???)...ALERT: Vulnerable to Exploit 3 (???)
+Testing for Exploit 3 (???)...YAY: Not vulnerable to Exploit 3 (???)
 Testing for Exploit 4 (CVE-2014-7186)...YAY: Not vulnerable to Exploit 4 (CVE-2014-7186)
 Testing for Exploit 5 (CVE-2014-7187)...YAY: Not vulnerable to Exploit 5 (CVE-2014-7187)
+Testing for Exploit 6 (CVE-2014-6278)...YAY: Not vulnerable to Exploit 6 (CVE-2014-6278)
+Testing for Exploit 7 (CVE-2014-6277)...ALERT: Vulnerable to Exploit 7 (CVE-2014-6277)
+
+********************
+Summary of work...
+10.0.0.10...patched the following: Exploit 1 (CVE-2014-6271); Exploit 2 (CVE-2014-7169); Exploit 3 (???); Exploit 4 (CVE-2014-7186); Exploit 5 (CVE-2014-7187); Exploit 6 (CVE-2014-6278)
+	still vulnerable to the following: Exploit 7 (CVE-2014-6277)
 Complete!
 ```
